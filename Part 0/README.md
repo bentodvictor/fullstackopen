@@ -1,4 +1,5 @@
 # Full Stack Open - Part 0
+## Fundamentals of Web apps
 > Helsinki University - Full Stack Open Course Part 0
 
 ## 0.1: HTML

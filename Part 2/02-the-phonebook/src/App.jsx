@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { PersonForm } from './components/PersonForm'
+import { Persons } from './components/Persons'
+import { Filter } from './components/Filter'
 
 const App = () => {
   const [persons, setPersons] = useState([
@@ -10,8 +13,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
-  
-  const filteredPersons = filter === '' 
+
+  const filteredPersons = filter === ''
     ? persons
     : persons.filter(p => p.name.includes(filter));
 
@@ -40,24 +43,14 @@ const App = () => {
 
   return (
     <div>
-      <h2>Phonebook</h2>
-      Name filter: <input value={filter} onChange={handleFilter}/>
-      <h3>Add new</h3>
-      <form onSubmit={handleSubmit}>
-        <div>
-          Name: <input value={newName} onChange={handleName} />
-        </div>
-        <div>
-          Number: <input value={newNumber} onChange={{ handleNumber }} />
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
-      <h3>Numbers</h3>
-      {filteredPersons.map((p, idx) => (
-        <p key={idx}>{p.name} {p.number}</p>
-      ))}
+      <h1>Phonebook</h1>
+      <Filter value={filter} handleFilter={handleFilter} />
+      <br />
+      <h2>Add new</h2>
+      <PersonForm newName={newName} newNumber={newNumber} handleSubmit={handleSubmit} handleName={handleName} handleNumber={handleNumber} />
+      <br />
+      <h2>Numbers</h2>
+      <Persons filteredPersons={filteredPersons} />
     </div>
   )
 }
