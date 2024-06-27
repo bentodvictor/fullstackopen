@@ -1,20 +1,25 @@
-import { useState } from 'react'
+import axios from 'axios';
+import { useEffect, useState } from 'react'
 import { PersonForm } from './components/PersonForm'
 import { Persons } from './components/Persons'
 import { Filter } from './components/Filter'
+import { create, list, remove, update } from './services/persons';
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ])
+  const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
 
-  const filteredPersons = filter === ''
+  useEffect(() => {
+    list()
+      .then(data => {
+        setPersons(data)
+      })
+      .catch(e => console.error(e));
+  }, []);
+
+  let filteredPersons = filter === ''
     ? persons
     : persons.filter(p => p.name.includes(filter));
 
@@ -27,18 +32,39 @@ const App = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Check if name is already in array
+    // Check if person is already in array
     let person = persons.find(p => p.name === newName);
+    const newPerson = { name: newName, number: newNumber };
 
-    if (!person)
-      setPersons([...persons,
-      { name: newName },
-      { number: newNumber }
-      ]);
+    if (!person) {
+      create(newPerson)
+        .then(data => setPersons(persons.concat(data)))
+        .catch(e => console.error(e));
+    }
+    else if (person.number !== newNumber)
+      update(person.id, newPerson)
+        .then(data => {
+          setPersons(persons.filter(p => p.id !== person.id).concat(data))
+        })
+        .catch(e => console.error(e));
     else
       alert(`${newName} is already added to phonebook`);
 
     setNewName('');
+    setNewNumber('');
+  }
+
+  const handleDelete = (p) => {
+    if (window.confirm(`Do you really want to delete ${p.name}?`)) {
+      remove(p.id)
+        .then(personDeleted => {
+          setPersons(persons.filter(p => p.id !== personDeleted.id))
+        })
+        .catch(e => console.error(e));
+
+      filteredPersons = persons;
+      setFilter('');
+    }
   }
 
   return (
@@ -50,7 +76,7 @@ const App = () => {
       <PersonForm newName={newName} newNumber={newNumber} handleSubmit={handleSubmit} handleName={handleName} handleNumber={handleNumber} />
       <br />
       <h2>Numbers</h2>
-      <Persons filteredPersons={filteredPersons} />
+      <Persons filteredPersons={filteredPersons} handleDelete={handleDelete} />
     </div>
   )
 }
