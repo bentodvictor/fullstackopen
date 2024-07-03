@@ -4,12 +4,19 @@ import { PersonForm } from './components/PersonForm'
 import { Persons } from './components/Persons'
 import { Filter } from './components/Filter'
 import { create, list, remove, update } from './services/persons';
+import { Notification } from './components/Notification';
 
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+  const [notiMessage, setNotiMessage] = useState('');
+  const [notiType, setNotiType] = useState('');
+
+
+  // return condition
+  if (!persons) return;
 
   useEffect(() => {
     list()
@@ -38,13 +45,18 @@ const App = () => {
 
     if (!person) {
       create(newPerson)
-        .then(data => setPersons(persons.concat(data)))
+        .then(data => {
+          setPersons(persons.concat(data))
+          handleNotiMessage(`Successfully added user ${data.name}`, 'success')
+        })
         .catch(e => console.error(e));
     }
+    // Update user
     else if (person.number !== newNumber)
       update(person.id, newPerson)
         .then(data => {
           setPersons(persons.filter(p => p.id !== person.id).concat(data))
+          handleNotiMessage(`Successfully updated user ${data.name} with number ${data.number}`, 'warning')
         })
         .catch(e => console.error(e));
     else
@@ -59,16 +71,31 @@ const App = () => {
       remove(p.id)
         .then(personDeleted => {
           setPersons(persons.filter(p => p.id !== personDeleted.id))
+          handleNotiMessage(`Successfully deleted user ${personDeleted.name}`, 'success')
         })
-        .catch(e => console.error(e));
+        .catch(e => {
+          console.error('error', e);
+          if (e.response.statusText == "Not Found")
+            handleNotiMessage(`Information of ${p.name} has already been removed from server`, 'error')
+        });
 
       filteredPersons = persons;
       setFilter('');
     }
   }
 
+  const handleNotiMessage = (message, status) => {
+    setNotiMessage(message);
+    setNotiType(status)
+    setTimeout(() => {
+      setNotiType('')
+      setNotiMessage('');
+    }, 3000);
+  }
+
   return (
     <div>
+      <Notification message={notiMessage} status={notiType} />
       <h1>Phonebook</h1>
       <Filter value={filter} handleFilter={handleFilter} />
       <br />

@@ -4,7 +4,6 @@ const baseUrl = 'http://localhost:3001/persons';
 export const list = () => {
     const request = axios.get(baseUrl)
     return request.then(res => res.data);
-
 }
 
 export const create = (newPerson) => {
