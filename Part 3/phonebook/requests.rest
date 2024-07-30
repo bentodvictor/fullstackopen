@@ -1,0 +1,22 @@
+@baseUrl = http://localhost:3002/api
+
+### Get all persons
+GET {{baseUrl}}/persons
+
+### Get the total of people and the current date time 
+GET {{baseUrl}}/info
+
+### Get a person details
+GET {{baseUrl}}/persons/10
+
+### Delete a person
+DELETE {{baseUrl}}/persons/4
+
+### Add a new person
+POST {{baseUrl}}/persons
+Content-Type: application/json
+
+{
+    "name": "Bento",
+    "number": "123-33-6423122"
+}
