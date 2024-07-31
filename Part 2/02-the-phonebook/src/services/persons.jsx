@@ -1,5 +1,8 @@
 import axios from 'axios';
-const baseUrl = 'http://localhost:3001/persons';
+// local
+// const baseUrl = 'http://localhost:3001/persons';
+// using part 3 backend project 
+const baseUrl = '/api/persons';
 
 export const list = () => {
     const request = axios.get(baseUrl)

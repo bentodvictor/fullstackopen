@@ -66,17 +66,17 @@ const App = () => {
     setNewNumber('');
   }
 
-  const handleDelete = (p) => {
-    if (window.confirm(`Do you really want to delete ${p.name}?`)) {
-      remove(p.id)
-        .then(personDeleted => {
+  const handleDelete = (personDeleted) => {
+    if (window.confirm(`Do you really want to delete ${personDeleted.name}?`)) {
+      remove(personDeleted.id)
+        .then(_ => {
           setPersons(persons.filter(p => p.id !== personDeleted.id))
           handleNotiMessage(`Successfully deleted user ${personDeleted.name}`, 'success')
         })
         .catch(e => {
           console.error('error', e);
           if (e.response.statusText == "Not Found")
-            handleNotiMessage(`Information of ${p.name} has already been removed from server`, 'error')
+            handleNotiMessage(`Information of ${personDeleted.name} has already been removed from server`, 'error')
         });
 
       filteredPersons = persons;
