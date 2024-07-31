@@ -1,6 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
-const port = 3002;
+const cors = require('cors');
+const PORT = process.env.PORT || 3002;
 const app = express();
 let persons = [
     {
@@ -25,6 +26,9 @@ let persons = [
     }
 ];
 
+app.use(cors());
+app.use(express.static('dist'));
+
 // Middleware responsible for takes the raw data from the requests that are stored 
 // in the request object, parses it into a JavaScript object and assigns it to the 
 // request object as a new property body.
@@ -32,7 +36,7 @@ app.use(express.json());
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :postData'));
 
-morgan.token('postData', function(req, res, param) {
+morgan.token('postData', function (req, res, param) {
     if (req.method === 'POST') {
         return JSON.stringify(req.body);
     }
@@ -102,6 +106,7 @@ app.post('/api/persons', (request, response) => {
     return response.status(201).json(newPerson)
 });
 
-app.listen(port, () => {
-    console.log(`Listening on port ${port}`)
+// Listner
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
 });
