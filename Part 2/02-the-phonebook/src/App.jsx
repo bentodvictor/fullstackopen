@@ -49,7 +49,10 @@ const App = () => {
           setPersons(persons.concat(data))
           handleNotiMessage(`Successfully added user ${data.name}`, 'success')
         })
-        .catch(e => console.error(e));
+        .catch(e => {
+          console.error(e)
+          handleNotiMessage(e.response.data.error, 'error')
+        });
     }
     // Update user
     else if (person.number !== newNumber)
@@ -58,7 +61,10 @@ const App = () => {
           setPersons(persons.filter(p => p.id !== person.id).concat(data))
           handleNotiMessage(`Successfully updated user ${data.name} with number ${data.number}`, 'warning')
         })
-        .catch(e => console.error(e));
+        .catch(e => {
+          console.error(e)
+          handleNotiMessage(e.response.data.error, 'error')
+        });
     else
       alert(`${newName} is already added to phonebook`);
 
