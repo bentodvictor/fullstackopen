@@ -1,112 +1,149 @@
-const express = require('express');
-const morgan = require('morgan');
-const cors = require('cors');
-const PORT = process.env.PORT || 3002;
-const app = express();
-let persons = [
-    {
-        "id": "1",
-        "name": "Arto Hellas",
-        "number": "040-123456"
-    },
-    {
-        "id": "2",
-        "name": "Ada Lovelace",
-        "number": "39-44-5323523"
-    },
-    {
-        "id": "3",
-        "name": "Dan Abramov",
-        "number": "12-43-234345"
-    },
-    {
-        "id": "4",
-        "name": "Mary Poppendieck",
-        "number": "39-23-6423122"
-    }
-];
+require('dotenv').config()
+const express = require('express')
+const morgan = require('morgan')
+const cors = require('cors')
+const PORT = process.env.PORT || 3002
+const app = express()
+const Person = require('./models/person')
+app.use(cors())
+app.use(express.static('dist'))
 
-app.use(cors());
-app.use(express.static('dist'));
-
-// Middleware responsible for takes the raw data from the requests that are stored 
-// in the request object, parses it into a JavaScript object and assigns it to the 
+// Middleware responsible for takes the raw data from the requests that are stored
+// in the request object, parses it into a JavaScript object and assigns it to the
 // request object as a new property body.
-app.use(express.json());
+app.use(express.json())
 
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms :postData'));
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :postData'))
 
-morgan.token('postData', function (req, res, param) {
-    if (req.method === 'POST') {
-        return JSON.stringify(req.body);
-    }
-});
+morgan.token('postData', function (req) {
+  if (req.method === 'POST') {
+    return JSON.stringify(req.body)
+  }
+})
 
-const generateId = () => {
-    const maxId = persons.length > 0
-        ? Math.max(...persons.map(p => Number(p.id)))
-        : 0
-    return String(maxId + 1)
-}
+// API Methods
+app.get('/api/persons', async (request, response, next) => {
+  try {
+    const persons = await Person.find({})
 
-app.get('/api/persons', (request, response) => {
     return response.status(200).json(persons)
-});
+  }
+  catch (e) {
+    next(e)
+  }
+})
 
-app.get('/api/info', (request, response) => {
+app.get('/api/info', async (request, response, next) => {
+  try {
+    const personsLength = await Person.countDocuments()
+
     return response.status(200).send(`
-        <p>Phonebook has info for ${persons.length} people.</p>
-        <p>${new Date()}</p>
-   `);
-});
+            <p>Phonebook has info for ${personsLength} people.</p>
+            <p>${new Date()}</p>
+        `)
+  }
+  catch (e) {
+    next(e)
+  }
+})
 
-app.get('/api/persons/:id', (request, response) => {
-    const id = request.params.id;
-    const person = persons.find(p => p.id == id);
+app.get('/api/persons/:id', async (request, response, next) => {
+  try {
+    const id = request.params.id
+    const person = await Person.findById(id)
 
     if (!person) {
-        return response.status(204).end();
+      return response.status(404).end()
     }
 
-    return response.status(200).json(person);
-});
+    return response.status(200).json(person)
+  }
+  catch (e) {
+    next(e)
+  }
+})
 
-app.delete('/api/persons/:id', (request, response) => {
-    const id = request.params.id;
-    const newPersons = persons.filter(p => p.id !== id);
+app.delete('/api/persons/:id', async (request, response, next) => {
+  try {
+    const id = request.params.id
 
-    persons = newPersons;
+    await Person.deleteOne({ _id: id })
 
-    return response.status(204).end();
-});
+    return response.status(204).end()
+  }
+  catch (e) {
+    next(e)
+  }
+})
 
-app.post('/api/persons', (request, response) => {
-    const body = request.body;
+app.put('/api/persons/:id', async (request, response, next) => {
+  try {
+    const id = request.params.id
+    const { name, number } = request.body
+
+    if (!name || !number) {
+      return response.status(400).json({
+        error: 'content missing'
+      })
+    }
+
+    await Person.findByIdAndUpdate(id,
+      { name, number },
+      { new: true, runValidators: true, context: 'query' })
+
+    const person = await Person.findById(id)
+
+    return response.status(200).json(person)
+  }
+  catch (e) {
+    next(e)
+  }
+})
+
+app.post('/api/persons', async (request, response, next) => {
+  try {
+    const body = request.body
 
     if (!body.name || !body.number) {
-        return response.status(400).json({
-            error: 'content missing'
-        })
+      return response.status(400).json({
+        error: 'content missing'
+      })
     }
 
-    if (persons.find(p => p.name == body.name)) {
-        return response.status(403).json({
-            error: 'name must be unique'
-        })
+    var person = await Person.findOne({ name: body.name })
+
+    if (person) {
+      return response.status(403).json({
+        error: 'name must be unique'
+      })
     }
 
-    const newPerson = {
-        id: generateId(),
-        name: body.name,
-        number: body.number
-    }
-
-    persons = persons.concat(newPerson)
+    const newPerson = await Person.create({
+      name: body.name,
+      number: body.number
+    })
 
     return response.status(201).json(newPerson)
-});
+  }
+  catch (e) {
+    next(e)
+  }
+})
+
+// Error middleware
+app.use((error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
+  }
+
+  next(error)
+})
 
 // Listner
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
-});
+  console.log(`Server running on port ${PORT}`)
+})

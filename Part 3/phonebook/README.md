@@ -108,3 +108,138 @@ NB If you use Render, make sure the directory dist is not ignored by git on the 
 Also, make sure that the frontend still works locally (in development mode when started with command npm run dev).
 
 If you have problems getting the app working make sure that your directory structure matches the example app.
+
+# 3.12: Command-line database
+Create a cloud-based MongoDB database for the phonebook application with MongoDB Atlas.
+
+Create a mongo.js file in the project directory, that can be used for adding entries to the phonebook, and for listing all of the existing entries in the phonebook.
+
+NB: Do not include the password in the file that you commit and push to GitHub!
+
+The application should work as follows. You use the program by passing three command-line arguments (the first is the password), e.g.:
+
+`node mongo.js yourpassword Anna 040-1234556`
+
+As a result, the application will print:
+
+`added Anna number 040-1234556 to phonebook`
+
+The new entry to the phonebook will be saved to the database. Notice that if the name contains whitespace characters, it must be enclosed in quotes:
+
+`node mongo.js yourpassword "Arto Vihavainen" 045-1232456`
+
+If the password is the only parameter given to the program, meaning that it is invoked like this:
+
+`node mongo.js yourpassword`
+
+Then the program should display all of the entries in the phonebook:
+
+```
+phonebook:
+Anna 040-1234556
+Arto Vihavainen 045-1232456
+Ada Lovelace 040-1231236
+```
+
+You can get the command-line parameters from the process.argv variable.
+
+NB: do not close the connection in the wrong place. E.g. the following code will not work:
+
+```javascript
+Person
+  .find({})
+  .then(persons=> {
+    // ...
+  })
+
+mongoose.connection.close()
+```
+
+In the code above the mongoose.connection.close() command will get executed immediately after the Person.find operation is started. This means that the database connection will be closed immediately, and the execution will never get to the point where Person.find operation finishes and the callback function gets called.
+
+The correct place for closing the database connection is at the end of the callback function:
+
+```javascript
+Person
+  .find({})
+  .then(persons=> {
+    // ...
+    mongoose.connection.close()
+  })
+```
+
+NB: If you define a model with the name Person, mongoose will automatically name the associated collection as people.
+
+# 3.13: Phonebook database, step 1
+Change the fetching of all phonebook entries so that the data is fetched from the database.
+
+Verify that the frontend works after the changes have been made.
+
+In the following exercises, write all Mongoose-specific code into its own module, just like we did in the chapter Database configuration into its own module.
+
+# 3.14: Phonebook database, step 2
+Change the backend so that new numbers are saved to the database. Verify that your frontend still works after the changes.
+
+At this stage, you can ignore whether there is already a person in the database with the same name as the person you are adding.
+
+# 3.15: Phonebook database, step 3
+Change the backend so that deleting phonebook entries is reflected in the database.
+
+Verify that the frontend still works after making the changes.
+
+# 3.16: Phonebook database, step 4
+Move the error handling of the application to a new error handler middleware.
+
+# 3.17*: Phonebook database, step 5
+If the user tries to create a new phonebook entry for a person whose name is already in the phonebook, the frontend will try to update the phone number of the existing entry by making an HTTP PUT request to the entry's unique URL.
+
+Modify the backend to support this request.
+
+Verify that the frontend works after making your changes.
+
+# 3.18*: Phonebook database step 6
+Also update the handling of the api/persons/:id and info routes to use the database, and verify that they work directly with the browser, Postman, or VS Code REST client.
+
+# 3.19*: Phonebook database, step 7
+Expand the validation so that the name stored in the database has to be at least three characters long.
+
+Expand the frontend so that it displays some form of error message when a validation error occurs. Error handling can be implemented by adding a catch block as shown below:
+
+```javascript
+personService
+    .create({ ... })
+    .then(createdPerson => {
+      // ...
+    })
+    .catch(error => {
+      // this is the way to access the error message
+      console.log(error.response.data.error)
+    })
+```
+
+NB: On update operations, mongoose validators are off by default. Read the documentation to determine how to enable them.
+
+# 3.20*: Phonebook database, step 8
+Add validation to your phonebook application, which will make sure that phone numbers are of the correct form. A phone number must:
+
+- have length of 8 or more
+- be formed of two parts that are separated by -, the first part has two or three numbers and the second part also consists of numbers
+  - eg. 09-1234556 and 040-22334455 are valid phone numbers
+  - eg. 1234556, 1-22334455 and 10-22-334455 are invalid
+Use a Custom validator to implement the second part of the validation.
+
+If an HTTP POST request tries to add a person with an invalid phone number, the server should respond with an appropriate status code and error message.
+
+# 3.21 Deploying the database backend to production
+Generate a new "full stack" version of the application by creating a new production build of the frontend, and copying it to the backend repository. Verify that everything works locally by using the entire application from the address http://localhost:3001/.
+
+Push the latest version to Fly.io/Render and verify that everything works there as well.
+
+NOTE: you should deploy the BACKEND to the cloud service. If you are using Fly.io the commands should be run in the root directory of the backend (that is, in the same directory where the backend package.json is). In case of using Render, the backend must be in the root of your repository.
+
+You shall NOT be deploying the frontend directly at any stage of this part. It is just backend repository that is deployed throughout the whole part, nothing else.
+
+# 3.22: Lint configuration
+Add ESlint to your application and fix all the warnings.
+
+This was the last exercise of this part of the course. It's time to push your code to GitHub and mark all of your finished exercises to the exercise submission system.

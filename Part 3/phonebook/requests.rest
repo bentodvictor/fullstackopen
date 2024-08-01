@@ -10,7 +10,7 @@ GET {{baseUrl}}/info
 GET {{baseUrl}}/persons/10
 
 ### Delete a person
-DELETE {{baseUrl}}/persons/4
+DELETE {{baseUrl}}/persons/66aba8b68f1277fdf60590300
 
 ### Add a new person
 POST {{baseUrl}}/persons
