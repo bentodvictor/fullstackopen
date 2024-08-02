@@ -3,9 +3,9 @@ import axios from 'axios';
 // const baseUrl = 'http://localhost:3001/persons';
 // using part 3 backend project 
 ////  publish
-// const baseUrl = '/api/persons';
+const baseUrl = '/api/persons';
 ////  dev
-const baseUrl = '//localhost:3002/api/persons';
+// const baseUrl = '//localhost:3002/api/persons';
 export const list = () => {
     const request = axios.get(baseUrl)
     return request.then(res => res.data);
