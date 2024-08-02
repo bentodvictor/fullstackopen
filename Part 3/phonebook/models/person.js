@@ -3,13 +3,13 @@ const mongoose = require('mongoose')
 const url = process.env.MONGODB_URI
 
 mongoose.set('strictQuery', false)
+mongoose.set('debug', true)
 
 mongoose.connect(url, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   ssl: true,
-  sslValidate: false,
-  tlsAllowInvalidCertificates: true
+  tlsAllowInvalidCertificates: true,
 })
   .then(() => {
     console.log('connected to MongoDB')
