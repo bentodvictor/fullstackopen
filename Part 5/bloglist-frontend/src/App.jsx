@@ -1,5 +1,4 @@
 import { useState, useEffect, useSyncExternalStore } from 'react'
-import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import { BlogList } from './components/BlogList'
@@ -7,6 +6,7 @@ import { Notification } from './components/Notification'
 import { BlogForm } from './components/BlogForm'
 import { LoginForm } from './components/LoginForm'
 import { LogoutForm } from './components/LogoutForm'
+import { Togglable } from './components/Togglable'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
@@ -16,10 +16,6 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
-
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [url, setUrl] = useState('')
 
   useEffect(() => {
     loadBlogs()
@@ -69,6 +65,17 @@ const App = () => {
     setPassword('')
   }
 
+  const deleteBlog = async (blogId) => {
+    try {
+      await blogService.deleteBlog(blogId)
+      const newBlogs = blogs.filter((blog) => blog.id !== blogId)
+      setBlogs(newBlogs)
+      setSuccess('blog deleted')
+    } catch (err) {
+      setError(`Error: ${err.response.data.error}`)
+    }
+  }
+
   const addBlog = async (event) => {
     event.preventDefault();
 
@@ -85,9 +92,6 @@ const App = () => {
     if (response?.id) {
       loadBlogs()
       setSuccess(`a new blog \"${response.title}\" by \"${response.author}\" added`)
-      setTitle('')
-      setAuthor('')
-      setUrl('')
     }
 
     setTimeout(() => {
@@ -95,20 +99,32 @@ const App = () => {
     }, 5000)
   }
 
-  const handleAuthor = ({ target }) => setAuthor(target.value)
-  const handleTitle = ({ target }) => setTitle(target.value)
-  const handleUrl = ({ target }) => setUrl(target.value)
+  const handleLike = async (blog) => {
+    const body = {
+      ...blog,
+      user: blog.user?.id,
+      likes: ++blog.likes,
+    }
+
+    const response = await blogService.update(blog.id, body)
+
+    if (response?.id) {
+      loadBlogs()
+    }
+  }
+
   const handleUsername = ({ target }) => setUsername(target.value)
   const handlePassword = ({ target }) => setPassword(target.value)
 
-  const loadBlogs = () => {
-    blogService.getAll().then(blogs =>
-      setBlogs(blogs)
-    )
+  const loadBlogs = async () => {
+    const blogs = await blogService.getAll()
+    blogs.sort((a, b) => b.likes - a.likes)
+    setBlogs(blogs)
   }
 
   return (
     <div>
+      {/* Notifications */}
       {error && <Notification type='error' message={error} />}
       {success && <Notification type='success' message={success} />}
 
@@ -122,19 +138,16 @@ const App = () => {
       <br />
       <hr />
 
-      {user !== null && <BlogForm
-        addBlog={addBlog}
-        title={title}
-        author={author}
-        url={url}
-        onChangeAuthor={handleAuthor}
-        onChangeTitle={handleTitle}
-        onChangeUrl={handleUrl}
-      />}
+      {
+        user !== null &&
+        <Togglable buttonLabel="create new blog">
+          <BlogForm addBlog={addBlog} />
+        </Togglable>
+      }
 
       <br />
 
-      {user !== null && <BlogList blogs={blogs} />}
+      {user !== null && <BlogList blogs={blogs} handleLike={handleLike} deleteBlog={deleteBlog} F/>}
     </div>
   )
 }

@@ -8,7 +8,7 @@ export const Notification = ({ type, message }) => {
                 color: color,
                 fontWeight: 'bold',
                 border: `4px solid ${color}`,
-                padding: '10px',
+                padding: '10px',                
             }}>
                 {message}
             </p>
