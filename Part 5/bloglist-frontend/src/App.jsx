@@ -57,7 +57,7 @@ const App = () => {
   }
 
   const handleLogout = (event) => {
-    event.preventDefault();
+    event.preventDefault()
 
     setUser(null)
     window.localStorage.removeItem('loggedBlogappUser')
@@ -77,21 +77,21 @@ const App = () => {
   }
 
   const addBlog = async (event) => {
-    event.preventDefault();
+    event.preventDefault()
 
-    const formData = new FormData(event.target);
+    const formData = new FormData(event.target)
 
     const blog = {
       title: formData.get('title'),
       author: formData.get('author'),
       url: formData.get('url')
-    };
+    }
 
     const response = await blogService.create(blog)
 
     if (response?.id) {
       loadBlogs()
-      setSuccess(`a new blog \"${response.title}\" by \"${response.author}\" added`)
+      setSuccess(`a new blog "${response.title}" by "${response.author}" added`)
     }
 
     setTimeout(() => {
