@@ -24,16 +24,18 @@ const Blog = ({ blog, handleLike, deleteBlog }) => {
   const label = showDetails ? 'hide' : 'show'
 
   const blogView =
-    <div>
+    <div className='blog'>
       <p>
-        {blog.title} {blog.author}
+        <span>{blog.title}</span>
+        <span>{blog.author}</span>
         <button onClick={handleClickDetails}>{label}</button>
       </p>
     </div>
 
   const blogDetailsView =
-    <div>
-      <p>{blog.title} <button onClick={handleClickDetails}>{label}</button></p>
+    <div className='blog'>
+      <p>{blog.title}</p>
+      <span><button onClick={handleClickDetails}>{label}</button></span>
       <p>{blog.url}</p>
       <p>likes {blog.likes} <button onClick={() => handleLike(blog)}>add like</button></p>
       <p>{blog.author}</p>
