@@ -3,10 +3,10 @@ export const LoginForm = ({ username, password, handleLogin, onChangeUsername, o
     <div>
       <form onSubmit={handleLogin}>
         <div>username:
-          <input type='text' value={username} onChange={onChangeUsername} />
+          <input data-testid='username' type='text' value={username} onChange={onChangeUsername} />
         </div>
         <div>password:
-          <input type='password' value={password} onChange={onChangeValue} />
+          <input data-testid='password' type='password' value={password} onChange={onChangeValue} />
         </div>
         <button type='submit'>Login</button>
       </form>

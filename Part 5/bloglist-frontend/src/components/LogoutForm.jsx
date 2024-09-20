@@ -1,7 +1,7 @@
 export const LogoutForm = ({ username, onClickLogout }) => {
   return (
     <div>
-      <p>{username} logged-in</p> <button onClick={onClickLogout}>logout</button>
+      <p><span>{username}</span> <span>logged-in</span></p> <button onClick={onClickLogout}>logout</button>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useSyncExternalStore } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import { BlogList } from './components/BlogList'
@@ -16,6 +16,8 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
+
+  const blogFormRef = useRef()
 
   useEffect(() => {
     loadBlogs()
@@ -79,6 +81,8 @@ const App = () => {
   const addBlog = async (event) => {
     event.preventDefault()
 
+    blogFormRef.current.toggleVisibility()
+
     const formData = new FormData(event.target)
 
     const blog = {
@@ -90,7 +94,7 @@ const App = () => {
     const response = await blogService.create(blog)
 
     if (response?.id) {
-      loadBlogs()
+      await loadBlogs()
       setSuccess(`a new blog "${response.title}" by "${response.author}" added`)
     }
 
@@ -109,7 +113,7 @@ const App = () => {
     const response = await blogService.update(blog.id, body)
 
     if (response?.id) {
-      loadBlogs()
+      await loadBlogs()
     }
   }
 
@@ -140,14 +144,14 @@ const App = () => {
 
       {
         user !== null &&
-        <Togglable buttonLabel="create new blog">
+        <Togglable buttonLabel="create new blog" ref={blogFormRef}>
           <BlogForm addBlog={addBlog} />
         </Togglable>
       }
 
       <br />
 
-      {user !== null && <BlogList blogs={blogs} handleLike={handleLike} deleteBlog={deleteBlog} F/>}
+      {user !== null && <BlogList blogs={blogs} username={user?.username} handleLike={handleLike} deleteBlog={deleteBlog} F/>}
     </div>
   )
 }
