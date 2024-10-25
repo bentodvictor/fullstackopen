@@ -36,3 +36,97 @@ const App = () => {
 
 export default App
 ```
+
+# 6.9 Better Anecdotes, step 7
+Implement filtering for the anecdotes that are displayed to the user.
+
+browser showing filtering of anecdotes
+Store the state of the filter in the redux store. It is recommended to create a new reducer, action creators, and a combined reducer for the store using the combineReducers function.
+
+Create a new Filter component for displaying the filter. You can use the following code as a template for the component:
+
+```javascript
+const Filter = () => {
+  const handleChange = (event) => {
+    // input-field value is in variable event.target.value
+  }
+  const style = {
+    marginBottom: 10
+  }
+
+  return (
+    <div style={style}>
+      filter <input onChange={handleChange} />
+    </div>
+  )
+}
+
+export default Filter
+```
+
+# 6.10 Better Anecdotes, step 8
+Install Redux Toolkit for the project. Move the Redux store creation into the file store.js and use Redux Toolkit's configureStore to create the store.
+
+Change the definition of the filter reducer and action creators to use the Redux Toolkit's createSlice function.
+
+Also, start using Redux DevTools to debug the application's state easier.
+
+# 6.11 Better Anecdotes, step 9
+Change also the definition of the anecdote reducer and action creators to use the Redux Toolkit's createSlice function.
+
+Implementation note: when you use the Redux Toolkit to return the initial state of anecdotes, it will be immutable, so you will need to make a copy of it to sort the anecdotes, or you will encounter the error "TypeError: Cannot assign to read only property". You can use the spread syntax to make a copy of the array. Instead of:
+
+`anecdotes.sort()`
+
+Write:
+
+`[...anecdotes].sort()`
+
+# 6.12 Better Anecdotes, step 10
+The application has a ready-made body for the Notification component:
+
+```javascript
+const Notification = () => {
+  const style = {
+    border: 'solid',
+    padding: 10,
+    borderWidth: 1
+  }
+  return (
+    <div style={style}>
+      render here notification...
+    </div>
+  )
+}
+
+export default Notification
+```
+
+Extend the component so that it renders the message stored in the Redux store, making the component take the following form:
+
+```javascript
+import { useSelector } from 'react-redux'
+
+const Notification = () => {
+  const notification = useSelector(/* something here */)
+  const style = {
+    border: 'solid',
+    padding: 10,
+    borderWidth: 1
+  }
+  return (
+    <div style={style}>
+      {notification}
+    </div>
+  )
+}
+```
+
+You will have to make changes to the application's existing reducer. Create a separate reducer for the new functionality by using the Redux Toolkit's createSlice function.
+
+The application does not have to use the Notification component intelligently at this point in the exercises. It is enough for the application to display the initial value set for the message in the notificationReducer.
+
+# 6.13 Better Anecdotes, step 11
+Extend the application so that it uses the Notification component to display a message for five seconds when the user votes for an anecdote or creates a new anecdote.
+
+It's recommended to create separate action creators for setting and removing notifications.
