@@ -1,22 +1,23 @@
-import { useDispatch, useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux";
 import { notifyClear } from "../reducers/notificationReducer";
 
 export const Notification = () => {
-  const notification = useSelector(select => select.notification);
+  const notification = useSelector((select) => select.notification);
   const dispatch = useDispatch();
 
   const style = {
-    border: 'solid',
+    border: "solid",
     padding: 10,
     borderWidth: 1,
-    marginBottom: 10
-  }
+    marginBottom: 10,
+    backgroundColor: "#FFFF00",
+  };
 
   if (notification) {
     setTimeout(() => {
-      dispatch(notifyClear())
-    }, 5000)
+      dispatch(notifyClear());
+    }, 5000);
   }
 
-  return notification && <div style={style}>{notification}</div>
-}
+  return notification && <div style={style}>{notification}</div>;
+};
