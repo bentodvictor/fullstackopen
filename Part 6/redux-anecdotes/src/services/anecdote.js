@@ -10,7 +10,7 @@ const getAll = async () => {
     return response.data;
   } catch (e) {
     console.error(e);
-  }
+  }1
 };
 
 const create = async (content) => {
