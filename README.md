@@ -15,3 +15,5 @@
 ## [Part 5 - Testing React apps](./Part%205/)
 
 ## [Part 6 - Advanced state management](./Part%206/)
+
+## [Part 7 - React router, custom hooks, styling app with CSS and webpack](./Part%207/)
