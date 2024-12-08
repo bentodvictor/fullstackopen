@@ -50,9 +50,11 @@ blogsRouter.put("/:id", async (request, response) => {
   const { title, author, url, likes } = request.body;
   const blog = { title, author, url, likes };
 
-  const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, {
-    new: true,
-  });
+  const updatedBlog = await Blog
+    .findByIdAndUpdate(request.params.id, blog, {
+      new: true,
+    })
+    .populate("user", { id: 1, username: 1, name: 1 });
 
   response.json(updatedBlog);
 });
