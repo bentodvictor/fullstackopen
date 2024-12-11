@@ -1,4 +1,11 @@
-export const Notification = ({ type, message }) => {
+import { useNotificationValue } from "../NotificationContext";
+
+export const Notification = () => {
+  const notificationValue = useNotificationValue();
+
+  if (!notificationValue) return;
+
+  const { type, message } = notificationValue;
   const color = type === "error" ? "red" : "green";
 
   return (
