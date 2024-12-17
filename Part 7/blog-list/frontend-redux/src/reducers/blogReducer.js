@@ -30,10 +30,19 @@ const blogSlice = createSlice({
         blog.visible = !blog.visible;
       }
     },
+    setComment: (state, action) => {
+      const { newComment, blogId } = action.payload;
+
+      state.map((blog) => {
+        if (blog.id === blogId) {
+          blog.comments.push(newComment);
+        }
+      });
+    },
   },
 });
 
-export const { setBlog, addBlog, addLikeOf, removeBlog, toggle } =
+export const { setBlog, addBlog, addLikeOf, removeBlog, toggle, setComment } =
   blogSlice.actions;
 
 export const initializeBlogs = () => {
@@ -83,6 +92,13 @@ export const deleteBlogs = (id) => {
 export const toggleView = (blogId) => {
   return async (dispatch) => {
     dispatch(toggle(blogId));
+  };
+};
+
+export const addComment = (blogId, comment) => {
+  return async (dispatch) => {
+    const newComment = await blogService.addComment(blogId, comment);
+    dispatch(setComment({ newComment, blogId }));
   };
 };
 

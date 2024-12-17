@@ -1,19 +1,29 @@
 const blogsRouter = require("express").Router();
+const { default: mongoose } = require("mongoose");
 const Blog = require("../models/blog.js");
+const Comment = require("../models/comments.js");
 const { userExtractor } = require("../utils/middleware.js");
 
 blogsRouter.get("/", async (request, response) => {
-  const blogs = await Blog.find({}).populate("user", {
-    username: 1,
-    name: 1,
-    id: 1,
-  });
+  const blogs = await Blog.find({})
+    .populate("user", {
+      username: 1,
+      name: 1,
+      id: 1,
+    })
+    .populate("comments");
 
   response.json(blogs);
 });
 
 blogsRouter.get("/:id", async (request, response) => {
-  const blog = await Blog.findById(request.params.id);
+  const blog = await Blog.findById(request.params.id)
+    .populate("user", {
+      username: 1,
+      name: 1,
+      id: 1,
+    })
+    .populate("comments");
 
   if (blog) {
     response.json(blog);
@@ -38,10 +48,9 @@ blogsRouter.post("/", userExtractor, async (request, response) => {
     user: user.id,
   });
 
-  await user.save();
-
   const savedBlog = await blog.save();
   user.blogs = user.blogs.concat(savedBlog._id);
+  await user.save();
 
   response.status(201).json(savedBlog);
 });
@@ -50,11 +59,9 @@ blogsRouter.put("/:id", async (request, response) => {
   const { title, author, url, likes } = request.body;
   const blog = { title, author, url, likes };
 
-  const updatedBlog = await Blog
-    .findByIdAndUpdate(request.params.id, blog, {
-      new: true,
-    })
-    .populate("user", { id: 1, username: 1, name: 1 });
+  const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, {
+    new: true,
+  }).populate("user", { id: 1, username: 1, name: 1 });
 
   response.json(updatedBlog);
 });
@@ -73,6 +80,42 @@ blogsRouter.delete("/:id", userExtractor, async (request, response) => {
   await Blog.findByIdAndDelete(id);
 
   response.status(204).end();
+});
+
+// Comments
+blogsRouter.get("/:id/comments", userExtractor, async (request, response) => {
+  const { id } = request.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) throw new Error("Invalid blog Id");
+
+  const comments = await Comment.find({ blogs: id }).exec();
+
+  response.status(200).json();
+});
+
+blogsRouter.post("/:id/comments", async (request, response) => {
+  const { id } = request.params;
+  const { content } = request.body;
+
+  console.log({ id });
+  console.log({ content });
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return response.status(403).end();
+  }
+
+  const blog = await Blog.findById(id);
+  const comment = new Comment({
+    content: content,
+    blogs: blog.id,
+  });
+
+  const savedComment = await comment.save();
+  blog.comments = blog.comments.concat(savedComment.id);
+
+  await blog.save();
+
+  response.status(201).json(savedComment);
 });
 
 module.exports = blogsRouter;

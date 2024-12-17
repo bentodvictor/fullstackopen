@@ -1,21 +1,23 @@
+import { useNavigate } from "react-router";
 import { useUserDispatch, useUserValue } from "../UserContext";
 
 export const LogoutForm = () => {
   const user = useUserValue();
   const userDispatch = useUserDispatch();
+  const navigate = useNavigate();
 
   const handleLogout = (event) => {
     event.preventDefault();
 
-    userDispatch({ types: "removeUser" });
+    userDispatch({ type: "removeUser" });
     window.localStorage.removeItem("loggedBlogappUser");
+
+    navigate("/login");
   };
 
   return (
     <div>
-      <p>
-        <span>{user?.username}</span> <span>logged-in</span>
-      </p>
+      <span>{user?.username} logged-in</span>
       <button onClick={handleLogout}>logout</button>
     </div>
   );

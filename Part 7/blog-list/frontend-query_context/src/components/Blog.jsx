@@ -1,54 +1,51 @@
 import { useState } from "react";
 import { useUserValue } from "../UserContext";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import blogService from "../services/blogs";
 import { useNotificationDispatch } from "../NotificationContext";
+import { useNavigate, useParams } from "react-router";
 
-const Blog = ({ blog }) => {
+const Blog = () => {
+  const { id: blogId } = useParams();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const user = useUserValue();
   const notificationDispatch = useNotificationDispatch();
 
-  const clearNotification = () =>
-    setTimeout(() => {
-      notificationDispatch({ types: "clean" });
-    }, 5000);
+  // Correção: Hook useQuery sempre será chamado fora de blocos condicionais
+  const { data: blog, isLoading } = useQuery({
+    queryKey: ["blog", blogId],
+    queryFn: () => blogService.getBlog(blogId),
+    refetchOnWindowFocus: false,
+  });
 
+  const clearNotification = () => {
+    setTimeout(() => {
+      notificationDispatch({ type: "clean" });
+    }, 5000);
+  };
+
+  // Hooks de mutations
   const deleteBlogMutation = useMutation({
-    mutationFn: blogService.update,
+    mutationFn: (id) => blogService.deleteBlog(id),
     onSuccess: (deletedBlog) => {
       const blogs = queryClient.getQueryData(["blogs"]);
-      const updatedList = blogs.filter((b) => b.id !== deletedBlog.id);
+      const filteredBlogs = blogs.filter((b) => b.id !== deletedBlog.id);
+      queryClient.setQueryData(["blogs"], filteredBlogs);
 
-      queryClient.setQueryData(["blogs"], updatedList);
+      navigate("/");
     },
   });
 
-  const handleDelete = async (blogId) => {
-    try {
-      const confirmation = window.confirm(
-        `Remove blog ${blog.title} by ${blog.author}`,
-      );
-
-      if (!confirmation) return;
-
+  const handleDelete = async () => {
+    if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
       deleteBlogMutation.mutate(blog.id);
 
       notificationDispatch({
-        types: "notify",
+        type: "notify",
         payload: {
           type: "success",
-          message: "blog deleted.",
-        },
-      });
-
-      clearNotification();
-    } catch (err) {
-      notificationDispatch({
-        types: "notify",
-        payload: {
-          type: "error",
-          message: err.response.data.error,
+          message: "Blog deleted successfully.",
         },
       });
 
@@ -56,78 +53,103 @@ const Blog = ({ blog }) => {
     }
   };
 
+  const handleCommentMutation = useMutation({
+    mutationFn: ({ blogId, comment }) =>
+      blogService.addComment(blogId, comment),
+    onSuccess: (newComment) => {
+      const blog = queryClient.getQueryData(["blog", blogId]);
+      queryClient.setQueryData(["blog"], blog.comments.push(newComment));
+
+      // Atualiza também a lista geral de blogs, se existir
+      const blogs = queryClient.getQueryData(["blogs"]);
+      if (blogs) {
+        const updatedBlogs = blogs.map((b) =>
+          b.id === blog.id ? b.push(newComment) : b,
+        );
+        queryClient.setQueryData(["blogs"], updatedBlogs);
+      }
+    },
+  });
+  const handleComment = (event) => {
+    event.preventDefault();
+
+    const { comment } = event.target;
+    handleCommentMutation.mutate({ blogId, comment: comment.value });
+    event.target.comment.value = "";
+  };
+
   const handleLikeMutation = useMutation({
     mutationFn: ({ blogId, newBlog }) => blogService.update(blogId, newBlog),
     onSuccess: (updatedBlog) => {
-      const blogs = queryClient.getQueryData(["blogs"]);
-      const updatedList = blogs.map((b) =>
-        b.id === updatedBlog.id ? updatedBlog : b,
-      );
+      // Corrigido: usar a queryKey correta para o blog específico
+      const blog = queryClient.getQueryData(["blog", updatedBlog.id]);
 
-      queryClient.setQueryData(["blogs"], updatedList);
+      if (blog) {
+        queryClient.setQueryData(["blog", updatedBlog.id], {
+          ...blog,
+          likes: updatedBlog.likes,
+        });
+      }
+
+      // Atualiza também a lista geral de blogs, se existir
+      const blogs = queryClient.getQueryData(["blogs"]);
+      if (blogs) {
+        const updatedBlogs = blogs.map((b) =>
+          b.id === updatedBlog.id ? { ...b, likes: updatedBlog.likes } : b,
+        );
+        queryClient.setQueryData(["blogs"], updatedBlogs);
+      }
     },
   });
-  const handleLike = async (blog) => {
-    const body = {
+
+  const handleLike = () => {
+    const updatedBlog = {
       ...blog,
       user: blog.user?.id,
       likes: blog.likes + 1,
     };
-    console.log({ body });
-    handleLikeMutation.mutate({ blogId: blog.id, newBlog: body });
+    handleLikeMutation.mutate({ blogId: blog.id, newBlog: updatedBlog });
   };
 
-  const [showDetails, setShowDetails] = useState(false);
+  if (isLoading) {
+    return (
+      <div>
+        <h3>Loading...</h3>
+      </div>
+    );
+  }
 
-  const handleClickDetails = () => setShowDetails(!showDetails);
-
-  const label = showDetails ? "hide" : "show";
-
+  console.log(blog?.user?.username);
+  console.log(user?.username);
   const removeBtn =
-    blog.user.username === user?.username ? (
+    blog?.user?.username === user?.username ? (
       <button onClick={handleDelete}>remove</button>
     ) : (
       <span></span>
     );
 
-  const blogView = (
-    <div className="blog">
-      <p>
-        <span>{blog.title} </span>
-        <span>{blog.author} </span>
-        <button onClick={handleClickDetails}>{label}</button>
-      </p>
-    </div>
-  );
-
-  const blogDetailsView = (
-    <div className="blog">
-      <p>{blog.title}</p>
-      <span>
-        <button onClick={handleClickDetails}>{label}</button>
-      </span>
-      <p>{blog.url}</p>
-      <p>
-        likes {blog.likes}{" "}
-        <button onClick={() => handleLike(blog)}>add like</button>
-      </p>
-      <p>{blog.author}</p>
-      {removeBtn}
-    </div>
-  );
-
   return (
-    <div
-      style={{
-        paddingTop: 10,
-        paddingLeft: 2,
-        border: "solid",
-        borderWidth: 1,
-        marginBottom: 5,
-      }}
-    >
-      {!showDetails && blogView}
-      {showDetails && blogDetailsView}
+    <div className="blog">
+      <h1>{blog?.title}</h1>
+      <a href={blog?.url}>{blog?.url}</a>
+      <p>
+        {blog?.likes} likes
+        <button onClick={() => handleLike(blog)}>like</button>
+      </p>
+      <p>added by {blog?.author}</p>
+      {removeBtn}
+      <div>
+        <h3>comments</h3>
+        <form onSubmit={handleComment}>
+          <input type="text" name="comment" />
+          <button type="submit">add comment</button>
+        </form>
+        <ul>
+          {blog?.comments?.map((b) => {
+            return <li key={b.id}>{b.content}</li>;
+          })}
+        </ul>
+      </div>
     </div>
   );
 };

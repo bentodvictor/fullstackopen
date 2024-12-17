@@ -24,7 +24,7 @@ export const LoginForm = () => {
       blogService.setToken(user.token);
       window.localStorage.setItem("loggedBlogappUser", JSON.stringify(user));
 
-      userDispatch({ types: "setUser", payload: user });
+      userDispatch({ type: "setUser", payload: user });
       event.target.username.value = "";
       event.target.password.value = "";
     } catch (ex) {

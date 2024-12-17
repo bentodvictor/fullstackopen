@@ -1,6 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import Blog from "./Blog";
 import blogService from "../services/blogs";
+import { BlogListStyle } from "../styles";
+import { Link, useNavigate } from "react-router-dom";
+import { useUserValue } from "../UserContext";
 
 export const BlogList = () => {
   const blogs = useQuery({
@@ -11,9 +14,19 @@ export const BlogList = () => {
 
   return (
     <div>
-      {blogs?.map((blog) => (
-        <Blog key={blog.id} blog={blog} />
-      ))}
+      <BlogListStyle>
+        <ul>
+          {blogs?.map((blog) => {
+            return (
+              <li key={blog?.id}>
+                <Link key={blog?.id} to={"/blogs/" + blog?.id}>
+                  {blog?.title}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </BlogListStyle>
     </div>
   );
 };

@@ -1,15 +1,19 @@
 import { useEffect, useRef } from "react";
-import { BlogList } from "./components/BlogList";
 import { Notification } from "./components/Notification";
 import { LoginForm } from "./components/LoginForm";
-import { LogoutForm } from "./components/LogoutForm";
 import { initializeBlogs } from "./reducers/blogReducer";
+import { initializeUsers } from "./reducers/userReducer";
 import { userAlreadyLoggedin } from "./reducers/authReducer";
 import { useDispatch, useSelector } from "react-redux";
-import { Togglable } from "./components/Togglable";
-import { BlogForm } from "./components/BlogForm";
+import { Route, Routes, useNavigate } from "react-router-dom";
+import { Menu } from "./components/Menu";
+import { Home } from "./components/Home";
+import Blog from "./components/Blog";
+import { UserList } from "./components/UserList";
+import { User } from "./components/User";
 
 const App = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth);
 
@@ -18,27 +22,24 @@ const App = () => {
   useEffect(() => {
     dispatch(initializeBlogs());
     dispatch(userAlreadyLoggedin());
-  }, []);
+    dispatch(initializeUsers());
+  }, [dispatch]);
+
+  if (!user) navigate("/login");
 
   return (
     <div>
+      <Menu />
       <Notification />
-
       <h2>BLOGS</h2>
-      {user === null ? <LoginForm /> : <LogoutForm />}
-
-      <br />
-      <hr />
-
-      {user !== null && (
-        <Togglable buttonLabel="create new blog" ref={blogFormRef}>
-          <BlogForm blogFormRef={blogFormRef} />
-        </Togglable>
-      )}
-
-      <br />
-
-      {user !== null && <BlogList />}
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/blogs" element={<Home />} />
+        <Route path="/users" element={<UserList />} />
+        <Route path="/blogs/:id" element={<Blog />} />
+        <Route path="/users/:id" element={<User />} />
+        <Route path="/login" element={!user ? <LoginForm /> : <Home />} />
+      </Routes>
     </div>
   );
 };

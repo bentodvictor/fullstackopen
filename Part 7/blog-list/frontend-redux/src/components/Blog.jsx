@@ -1,14 +1,25 @@
 import { useDispatch, useSelector } from "react-redux";
 import {
+  addComment,
   deleteBlogs,
   incrementVote,
   toggleView,
 } from "../reducers/blogReducer";
 import { notify } from "../reducers/notificationReducer";
+import { useNavigate, useParams, useResolvedPath } from "react-router-dom";
 
-const Blog = ({ blog }) => {
+const Blog = () => {
   const dispatch = useDispatch();
+  const { id: blogId } = useParams();
   const user = useSelector((state) => state.auth);
+  const blog = useSelector((state) => state.blog).find((b) => b.id === blogId);
+
+  const handleComment = async (event) => {
+    event.preventDefault();
+    const { comment } = event.target;
+    dispatch(addComment(blogId, comment.value));
+    event.target.comment.value = "";
+  };
 
   const handleLike = async (blog) => {
     const body = {
@@ -19,16 +30,6 @@ const Blog = ({ blog }) => {
 
     await dispatch(incrementVote(blog.id, body));
   };
-
-  const blogStyle = {
-    paddingTop: 10,
-    paddingLeft: 2,
-    border: "solid",
-    borderWidth: 1,
-    marginBottom: 5,
-  };
-
-  const handleClickDetails = () => dispatch(toggleView(blog.id));
 
   const handleDelete = async () => {
     const confirmation = window.confirm(
@@ -50,45 +51,35 @@ const Blog = ({ blog }) => {
     }
   };
 
-  const label = blog?.visible ? "hide" : "show";
-
   const removeBtn =
-    blog.user.username === user.username ? (
+    blog?.user?.username === user?.username ? (
       <button onClick={handleDelete}>remove</button>
     ) : (
       <span></span>
     );
 
-  const blogView = (
-    <div className="blog">
-      <p>
-        <span>{blog.title} </span>
-        <span>{blog.author} </span>
-        <button onClick={handleClickDetails}>{label}</button>
-      </p>
-    </div>
-  );
-
-  const blogDetailsView = (
-    <div className="blog">
-      <p>{blog.title}</p>
-      <span>
-        <button onClick={handleClickDetails}>{label}</button>
-      </span>
-      <p>{blog.url}</p>
-      <p>
-        likes {blog.likes}
-        <button onClick={() => handleLike(blog)}>add like</button>
-      </p>
-      <p>{blog.author}</p>
-      {removeBtn}
-    </div>
-  );
-
   return (
-    <div style={blogStyle}>
-      {!blog?.visible && blogView}
-      {blog?.visible && blogDetailsView}
+    <div className="blog">
+      <h1>{blog?.title}</h1>
+      <a href={blog?.url}>{blog?.url}</a>
+      <p>
+        {blog?.likes} likes
+        <button onClick={() => handleLike(blog)}>like</button>
+      </p>
+      <p>added by {blog?.author}</p>
+      {removeBtn}
+      <div>
+        <h3>comments</h3>
+        <form onSubmit={handleComment}>
+          <input type="text" name="comment" />
+          <button type="submit">add comment</button>
+        </form>
+        <ul>
+          {blog?.comments?.map((b) => {
+            return <li key={b.id}>{b.content}</li>;
+          })}
+        </ul>
+      </div>
     </div>
   );
 };

@@ -29,7 +29,24 @@ usersRouter.post("/", async (request, response, next) => {
 });
 
 usersRouter.get("/", async (request, response) => {
-  const users = await User.find({}).populate("blogs");
+  const users = await User.find({}).populate("blogs", {
+    url: 1,
+    title: 1,
+    author: 1,
+    id: 1,
+  });
+
+  response.status(200).json(users);
+});
+
+usersRouter.get("/:id", async (request, response) => {
+  const { id } = request.params;
+  const users = await User.findById(id).populate("blogs", {
+    url: 1,
+    title: 1,
+    author: 1,
+    id: 1,
+  });
 
   response.status(200).json(users);
 });

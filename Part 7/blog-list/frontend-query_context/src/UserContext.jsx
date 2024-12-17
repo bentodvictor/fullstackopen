@@ -3,7 +3,7 @@ import { createContext, useContext, useReducer } from "react";
 const initialState = null;
 
 const userReducer = (state = initialState, action) => {
-  switch (action.types) {
+  switch (action.type) {
     case "setUser": {
       return action.payload;
     }

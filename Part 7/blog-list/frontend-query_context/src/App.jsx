@@ -7,15 +7,21 @@ import { LoginForm } from "./components/LoginForm";
 import { LogoutForm } from "./components/LogoutForm";
 import { Togglable } from "./components/Togglable";
 import { useUserDispatch, useUserValue } from "./UserContext";
+import { Menu } from "./components/Menu";
+import { Route, Routes, useNavigate } from "react-router-dom";
+import { Home } from "./components/Home";
+import Blog from "./components/Blog";
+import { UserList } from "./components/UserList";
+import { User } from "./components/User";
 
 const App = () => {
+  const navigate = useNavigate();
   const userDispatch = useUserDispatch();
   let user = useUserValue();
 
-  const blogFormRef = useRef();
-
   useEffect(() => {
     const loggedUserJson = window.localStorage.getItem("loggedBlogappUser");
+
     if (loggedUserJson) {
       const storedUser = JSON.parse(loggedUserJson); // Parse and store
       userDispatch({ type: "setUser", payload: storedUser }); // Update the context
@@ -25,24 +31,17 @@ const App = () => {
 
   return (
     <div>
-      {/* Notifications */}
+      <Menu />
       {<Notification />}
-
       <h2>BLOGS</h2>
-      {user === null ? <LoginForm /> : <LogoutForm />}
-
-      <br />
-      <hr />
-
-      {user !== null && (
-        <Togglable buttonLabel="create new blog" ref={blogFormRef}>
-          <BlogForm blogFormRef={blogFormRef} />
-        </Togglable>
-      )}
-
-      <br />
-
-      {user !== null && <BlogList />}
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/blogs" element={<Home />} />
+        <Route path="/users" element={<UserList />} />
+        <Route path="/blogs/:id" element={<Blog />} />
+        <Route path="/users/:id" element={<User />} />
+        <Route path="/login" element={!user ? <LoginForm /> : <Home />} />
+      </Routes>
     </div>
   );
 };

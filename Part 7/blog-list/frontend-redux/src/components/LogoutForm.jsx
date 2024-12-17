@@ -12,9 +12,7 @@ export const LogoutForm = () => {
 
   return (
     <div>
-      <p>
-        <span>{user?.username}</span> <span>logged-in</span>
-      </p>
+      <span>{user?.username} logged-in</span>
       <button onClick={handleLogout}>logout</button>
     </div>
   );
