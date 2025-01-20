@@ -170,6 +170,7 @@ const typeDefs = `
         allBooks(author: String, genre: String): [Book!]!
         allAuthors: [Author!]!
         me: User
+        genres: [String!]!
     }
 `
 
@@ -247,6 +248,10 @@ const resolvers = {
         },
         me: async (root, args, context) => {
             return context.currentUser
+        },
+        genres: async (root, args, context) => {
+            const allGenres = await Book.distinct('genres');
+            return allGenres;
         }
     },
     Mutation: {
@@ -369,7 +374,6 @@ const resolvers = {
         },
         login: async (root, args) => {
             const user = await User.findOne({ username: args.username })
-
             if (!user || args.password !== 'secret') {
                 throw new GraphQLError('Wrong credentials', {
                     extensions: {
@@ -382,7 +386,6 @@ const resolvers = {
                 username: user.username,
                 id: user._id,
             }
-
             return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
         }
     }
