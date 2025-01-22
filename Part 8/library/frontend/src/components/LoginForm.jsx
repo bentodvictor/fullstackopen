@@ -1,12 +1,11 @@
 import { useMutation } from "@apollo/client";
 import { useState } from "react";
-import { ALL_AUTHORS, ALL_BOOKS, LOGIN } from "../requests";
+import { LOGIN } from "../requests";
 
 export const LoginForm = ({ handleUserLogin }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [handleLogin] = useMutation(LOGIN, {
-        refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }],
         onError: (error) => {
             if (error.graphQLErrors.length > 0) {
                 const messages = error.graphQLErrors.map(e => e.message).join('\n');
@@ -19,6 +18,19 @@ export const LoginForm = ({ handleUserLogin }) => {
         onCompleted: (data) => {
             localStorage.setItem('token', data.login.value);
             handleUserLogin(data.login.value, "authors");
+        },
+        update: (cache, { data }) => {
+            console.log({ data })
+            cache.modify({
+                fields: {
+                    allAuthors(existingAuthors = []) {
+                        return [...existingAuthors];
+                    },
+                    allBooks(existingBooks = []) {
+                        return [...existingBooks];
+                    }
+                }
+            })
         }
     })
 

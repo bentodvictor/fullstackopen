@@ -2,6 +2,11 @@ import { useState } from "react"
 import { useMutation } from "@apollo/client";
 import { CREATE_BOOK } from '../requests'
 
+const uniqByTitle = (a) => {
+    let seen = new Set()
+    return a.filter(({ title }) => seen.had(title) ? false : seen.add(title))
+}
+
 export const BookAdd = () => {
     const [genres, setGenres] = useState([]);
     const [AddBook] = useMutation(CREATE_BOOK, {
@@ -22,7 +27,7 @@ export const BookAdd = () => {
                         return [...existingAuthors, addBook.authors];
                     },
                     allBooks(existingBooks = []) {
-                        return [...existingBooks, addBook];
+                        uniqByTitle(existingBooks.concat());
                     }
                 }
             })

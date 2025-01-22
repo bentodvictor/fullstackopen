@@ -1,6 +1,6 @@
-import { useQuery } from "@apollo/client";
+import { useQuery, useSubscription } from "@apollo/client";
 import { useEffect, useState } from "react";
-import { ALL_BOOKS, GET_GENRES, ME } from "../requests";
+import { ALL_BOOKS, BOOK_ADDED, GET_GENRES, ME } from "../requests";
 
 export const BookList = () => {
     const [genre, setGenre] = useState('');
@@ -9,14 +9,42 @@ export const BookList = () => {
     const [firstLoad, setFirstLoad] = useState(true);
     const { loading: userLoading, data: userData } = useQuery(ME);
     const { loading: genresLoading, data: genresData } = useQuery(GET_GENRES);
-    const { loading: booksLoading, data: booksData, refetch: refetchBooks } = useQuery(ALL_BOOKS, {
+    const { loading: booksLoading, data: booksData } = useQuery(ALL_BOOKS, {
         variables: { genre },
         skip: !genre
     });
+
+    useSubscription(BOOK_ADDED, {
+        onData: ({ client, data }) => {
+            const newBook = data.data.bookAdded;
+
+            window.alert(`New book added: \r    📖 ${newBook.title} \r    ✍ ${newBook.author.name}`);
+
+            client.cache.modify({
+                fields: {
+                    allBooks(existingBooks = []) {
+                        const isDuplicate = existingBooks.some(book => book.id === newBook.id);
+                        if (!isDuplicate) {
+                            return [...existingBooks, newBook];
+                        }
+                        return existingBooks;
+                    },
+                    allAuthors(existingAuthors = []) {
+                        const isAuthorExists = existingAuthors.some(author => author?.__ref?.includes(newBook.author.name));
+                        if (!isAuthorExists) {
+                            return [...existingAuthors, newBook.author];
+                        }
+                        return existingAuthors;
+                    }
+                }
+            })
+            client.refetchQueries({ includes: [ALL_BOOKS] })
+        }
+    });
+
     let dynamicHtml = firstLoad
         ? <><h2>recommendations</h2> <p>books in your favorite genre <strong>patterns</strong></p></>
         : <><h2>books</h2> <p>in genre <strong>{genre}</strong></p></>;
-
 
     useEffect(() => {
         if (!userLoading && userData) {
@@ -44,7 +72,6 @@ export const BookList = () => {
 
     const handleGenreClick = (genre) => {
         setGenre(genre);
-        refetchBooks({ genre }); // Explicitly refetch books for the selected genre
         setFirstLoad(false);
     };
 
