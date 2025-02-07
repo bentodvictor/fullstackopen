@@ -17,3 +17,7 @@
 ## [Part 6 - Advanced state management](./Part%206/)
 
 ## [Part 7 - React router, custom hooks, styling app with CSS and webpack](./Part%207/)
+
+##[Part 8 - GraphQL](./Part%208/)
+
+##[Part 9 - Typescript](Part%209/)
