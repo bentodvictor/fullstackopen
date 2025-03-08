@@ -4,3 +4,6 @@
 
 ## [Examples](./examples/)
 ## [Body Mass Index](./body_mass_index/)
+## [Flight Diaries](./flight-diaries/)
+## [Patientor](./patientor/)
+## [Course](./course/)

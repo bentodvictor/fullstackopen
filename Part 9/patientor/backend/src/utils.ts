@@ -1,76 +1,22 @@
 import { Gender, NewPatient } from "./types";
+import { z } from "zod";
 
-// Check types and enums
-const isString = (text: unknown): text is string => {
-    return typeof text === "string" || text instanceof String;
-};
+export const NewPatientSchema = z.object({
+    name: z.string(),
+    dateOfBirth: z.string().date(),
+    ssn: z.string(),
+    gender: z.nativeEnum(Gender),
+    occupation: z.string()
+});
 
-const isDate = (date: string): boolean => {
-    return Boolean(Date.parse(date));
-};
-
-const isGender = (param: string): param is Gender => {
-    return Object.values(Gender).map(g => g.toString()).includes(param);
-};
-
-// Parse function to validate if the request are in the correct type
-const parseName = (name: unknown): string => {
-    if (!isString(name)) {
-        throw new Error("Incorret or missing name: " + name);
-    }
-    return name;
-};
-
-const parseDateOfBirth = (dateOfBirth: unknown): string => {
-    if (!isString(dateOfBirth) || !isDate(dateOfBirth)) {
-        throw new Error("Inorrect or missing date of birth: " + dateOfBirth);
-    }
-    return dateOfBirth;
-};
-
-const parseSsn = (ssn: unknown): string => {
-    if (!isString(ssn)) {
-        throw new Error("Incorrect or missing ssn number: " + ssn);
-    };
-    return ssn;
-};
-
-const parseGender = (gender: unknown): Gender => {
-    if (!isString(gender) || !isGender(gender)) {
-        throw new Error("Incorrect or missing gender " + gender);
-    };
-    return gender;
-};
-
-const parseOccupation = (occupation: unknown): string => {
-    if (!isString(occupation)) {
-        throw new Error("Incorrect or missing occupation " + occupation);
-    };
-    return occupation;
-};
-
-// Function responsible for check all request body
+/**
+ * The function `toNewPatient` converts an unknown object to a `NewPatient` object using a schema
+ * parser.
+ * @param {unknown} object - The `object` parameter in the `toNewPatient` function is of type
+ * `unknown`, which means it can be any type of value. This function is designed to convert the input
+ * object into a `NewPatient` type using the `NewPatientSchema.parse` method.
+ * @returns The function `toNewPatient` is returning an object of type `NewPatient`.
+ */
 export const toNewPatient = (object: unknown): NewPatient => {
-    if (!object || typeof object !== "object") {
-        throw new Error("Incorrect or missing data!");
-    };
-
-    if ("name" in object &&
-        "dateOfBirth" in object &&
-        "ssn" in object &&
-        "gender" in object &&
-        "occupation" in object) {
-        const { name, dateOfBirth, ssn, gender, occupation } = object;
-        const newPatient: NewPatient = {
-            name: parseName(name),
-            dateOfBirth: parseDateOfBirth(dateOfBirth),
-            ssn: parseSsn(ssn),
-            gender: parseGender(gender),
-            occupation: parseOccupation(occupation)
-        };
-
-        return newPatient;
-    }
-
-    throw new Error("Incorrect data: some fields are missing");
+    return NewPatientSchema.parse(object);
 };

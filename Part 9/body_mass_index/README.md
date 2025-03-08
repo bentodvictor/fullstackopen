@@ -28,9 +28,7 @@ Write a function calculateExercises that calculates the average time of daily ex
 - a rating between the numbers 1-3 that tells how well the hours are met. You can decide on the metric on your own.
 - a text value explaining the rating, you can come up with the explanations
 
-The daily exercise hours are given to the function as an array that contains the number of exercise hours for each day in the training period. Eg. a week with 3 hours of training on Monday, none on Tuesday, 2 hours on Wednesday, 
-
-# 4.5 hours on Thursday and so on would be represented by the following array:
+The daily exercise hours are given to the function as an array that contains the number of exercise hours for each day in the training period. Eg. a week with 3 hours of training on Monday, none on Tuesday, 2 hours on Wednesday, 4.5 hours on Thursday and so on would be represented by the following array:
 
 ```javascript
 [3, 0, 2, 4.5, 0, 3, 1]
@@ -101,3 +99,111 @@ export default "this is the default..."
 Another note: somehow surprisingly TypeScript does not allow to define the same variable in many files at a "block-scope", that is, outside functions (or classes):
 
 This is actually not quite true. This rule applies only to files that are treated as "scripts". A file is a script if it does not contain any export or import statements. If a file has those, then the file is treated as a module, and the variables do not get defined in the block scope.
+
+# 9.4 Express
+Add Express to your dependencies and create an HTTP GET endpoint hello that answers 'Hello Full Stack!'
+
+The web app should be started with the commands npm start in production mode and npm run dev in development mode. The latter should also use ts-node-dev to run the app.
+
+Replace also your existing tsconfig.json file with the following content:
+
+```json
+{
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "strictBindCallApply": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "esModuleInterop": true,
+    "declaration": true,
+  }
+}
+```
+
+Make sure there aren't any errors!
+
+# 9.5 WebBMI
+Add an endpoint for the BMI calculator that can be used by doing an HTTP GET request to the endpoint bmi and specifying the input with query string parameters. For example, to get the BMI of a person with a height of 180 and a weight of 72, the URL is http://localhost:3003/bmi?height=180&weight=72.
+
+The response is a JSON of the form:
+
+```json
+{
+  weight: 72,
+  height: 180,
+  bmi: "Normal range"
+}
+```
+
+See the Express documentation for info on how to access the query parameters.
+
+If the query parameters of the request are of the wrong type or missing, a response with proper status code and an error message is given:
+
+```json
+{
+  error: "malformatted parameters"
+}
+```
+
+Do not copy the calculator code to file index.ts; instead, make it a TypeScript module that can be imported into index.ts.
+
+For calculateBmi to work correctly from both the command line and the endpoint, consider adding a check require.main === module to the file bmiCalculator.ts. It tests whether the module is main, i.e. it is run directly from the command line (in our case, npm run calculateBmi), or it is used by other modules that import functions from it (e.g. index.ts). Parsing command-line arguments makes sense only if the module is main. Without this condition, you might see argument validation errors when starting the application via npm start or npm run dev.
+
+See the Node documentation for more.
+
+# 9.6 Eslint
+Configure your project to use the above ESlint settings and fix all the warnings.
+
+# 9.7 WebExercises
+Add an endpoint to your app for the exercise calculator. It should be used by doing a HTTP POST request to the endpoint http://localhost:3003/exercises with the following input in the request body:
+
+```json
+{
+  "daily_exercises": [1, 0, 2, 0, 3, 0, 2.5],
+  "target": 2.5
+}
+```
+
+The response is a JSON of the following form:
+
+```json
+{
+    "periodLength": 7,
+    "trainingDays": 4,
+    "success": false,
+    "rating": 1,
+    "ratingDescription": "bad",
+    "target": 2.5,
+    "average": 1.2142857142857142
+}
+```
+
+If the body of the request is not in the right form, a response with the proper status code and an error message are given. The error message is either
+
+```json
+{
+  error: "parameters missing"
+}
+```
+
+or
+
+```json
+{
+  error: "malformatted parameters"
+}
+```
+
+depending on the error. The latter happens if the input values do not have the right type, i.e. they are not numbers or convertible to numbers.
+
+In this exercise, you might find it beneficial to use the explicit any type when handling the data in the request body. Our ESlint configuration is preventing this but you may unset this rule for a particular line by inserting the following comment as the previous line:
+
+`// eslint-disable-next-line @typescript-eslint/no-explicit-anycopy`
+You might also get in trouble with rules no-unsafe-member-access and no-unsafe-assignment. These rules may be ignored in this exercise.
+
+Note that you need to have a correct setup to get the request body; see part 3.
