@@ -1,6 +1,6 @@
 import { Button, Image, StyleSheet, View } from "react-native";
-import Text from "./Text";
-import theme from "../theme";
+import theme from "../../theme";
+import Text from "../Text";
 
 const styles = StyleSheet.create({
   repository: {

@@ -1,5 +1,5 @@
-import Text from "./Text";
 import { Link } from "react-router-native";
+import Text from "../Text";
 
 const AppBarTab = ({ tabName, to }) => (
   <Link to={to}>

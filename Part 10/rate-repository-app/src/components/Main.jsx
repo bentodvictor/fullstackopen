@@ -1,36 +1,30 @@
-import Constants from "expo-constants";
-import { Text, StyleSheet, View } from "react-native";
-import RepositoryList from "./RepositoryList";
-import AppBar from "./AppBar";
+import { StyleSheet, View } from "react-native";
+import { Navigate, Route, Routes } from "react-router-native";
 import theme from "../theme";
-import { Routes, Route, Navigate } from "react-router-native";
+import AppBar from "./AppBar";
+import RepositoryList from "./Repository";
 import SignIn from "./SignIn";
+import SignOut from "./SignOut";
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: Constants.statusBarHeight,
     flexGrow: 1,
     flexShrink: 1,
-  },
-  bgColor: {
     backgroundColor: theme.colors.bgMain,
     width: "100%",
     height: "100%",
   },
 });
 
-const HandleSigIn = (values) => {
-  console.log({ values });
-};
-
 const Main = () => {
   return (
-    <View style={(styles.container, styles.bgColor)}>
+    <View style={styles.container}>
       <AppBar />
       <Routes>
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/signin" replace />} />
         <Route path="/" element={<RepositoryList />} />
-        <Route path="/sigin" element={<SignIn onSubmit={HandleSigIn} />} />
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signout" element={<SignOut />} />
       </Routes>
     </View>
   );

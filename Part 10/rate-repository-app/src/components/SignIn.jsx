@@ -1,6 +1,8 @@
-import { Button, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { Formik } from "formik";
+import { Button, StyleSheet, TextInput, View } from "react-native";
+import { useNavigate } from "react-router-native";
 import * as yup from "yup";
+import useSignIn from "../hooks/useSignIn";
 import theme from "../theme";
 import Text from "./Text";
 
@@ -27,38 +29,45 @@ const styles = StyleSheet.create({
   },
 });
 
-const initialValues = { name: "", password: "" };
+const initialValues = { username: "", password: "" };
 
 const validationSchema = yup.object().shape({
-  name: yup.string().required("Username is required"),
+  username: yup.string().required("Username is required"),
   password: yup.string().required("Password is required"),
 });
 
-const SignIn = ({ onSubmit }) => {
+const SignIn = () => {
+  const [signIn] = useSignIn();
+  const navigate = useNavigate();
+
+  const onSubmit = async (values) => {
+    const { username, password } = values;
+
+    try {
+      await signIn({ username, password });
+      navigate("/", { replace: true });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <Formik
       initialValues={initialValues}
       onSubmit={onSubmit}
       validationSchema={validationSchema}
     >
-      {({
-        handleChange,
-        handleBlur,
-        handleSubmit,
-        values,
-        touched,
-        errors,
-      }) => (
+      {({ handleChange, handleSubmit, values, touched, errors }) => (
         <View style={styles.section}>
           <TextInput
             style={styles.input}
-            placeholder="Name"
-            value={values.name}
-            onChangeText={handleChange("name")}
+            placeholder="Username"
+            value={values.username}
+            onChangeText={handleChange("username")}
             placeholderTextColor={styles.input.color}
           />
-          {touched.name && errors.name && (
-            <Text style={styles.error}>{errors.name}</Text>
+          {touched.username && errors.username && (
+            <Text style={styles.error}>{errors.username}</Text>
           )}
           <TextInput
             style={styles.input}

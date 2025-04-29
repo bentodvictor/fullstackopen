@@ -1,6 +1,13 @@
+import Constants from "expo-constants";
 import { Platform } from "react-native";
 
 const theme = {
+  main_container: {
+    marginTop: Constants.statusBarHeight,
+    backgroundColor: "#e1e4e8",
+    width: "100%",
+    height: "100%",
+  },
   colors: {
     textPrimary: "#24292e",
     textSecondary: "#586069",
