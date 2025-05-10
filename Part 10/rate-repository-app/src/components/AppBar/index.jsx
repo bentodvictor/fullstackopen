@@ -26,11 +26,14 @@ const AppBar = () => {
         {data?.me ? (
           <>
             <AppBarTab tabName="Repositories" to="/" />
+            <AppBarTab tabName="Create a review" to="/repository/review" />
+            <AppBarTab tabName="My reviews" to="/reviews" />
             <AppBarTab tabName="Sign Out" to="/signout" />
           </>
         ) : (
           <>
             <AppBarTab tabName="Sign In" to="/signin" />
+            <AppBarTab tabName="Sign Up" to="/signup" />
           </>
         )}
       </ScrollView>

@@ -1,27 +1,44 @@
-import { FlatList, StyleSheet, View } from "react-native";
+import { useState } from "react";
+import { View } from "react-native";
+import { useDebounce } from "use-debounce";
 import useRepositories from "../../hooks/useRepositories";
-import Repository from "./Repository";
-
-const styles = StyleSheet.create({
-  separator: {
-    height: 10,
-  },
-});
-
-const ItemSeparator = () => <View style={styles.separator} />;
+import Text from "../Text";
+import RepositoryListContainer from "./RepositoryListContainer";
 
 const RepositoryList = () => {
-  const { repositories } = useRepositories();
+  const [sort, setSort] = useState({
+    orderDirection: "DESC",
+    orderBy: "CREATED_AT",
+  });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch] = useDebounce(searchQuery, 600);
 
-  const repositoryNodes = repositories
-    ? repositories?.edges?.map((edge) => edge.node)
-    : [];
+  const { repositories, loading, fetchMore } = useRepositories({
+    first: 3,
+    orderDirection: sort.orderDirection,
+    orderBy: sort.orderBy,
+    searchQuery: debouncedSearch,
+  });
+
+  const onEndReach = () => {
+    fetchMore();
+  };
+
+  if (loading)
+    return (
+      <View>
+        <Text>Loading...</Text>
+      </View>
+    );
 
   return (
-    <FlatList
-      data={repositoryNodes}
-      renderItem={({ item }) => <Repository item={item} />}
-      ItemSeparatorComponent={ItemSeparator}
+    <RepositoryListContainer
+      repositories={repositories}
+      sort={sort}
+      setSort={setSort}
+      searchQuery={searchQuery}
+      setSearchQuery={setSearchQuery}
+      onEndReach={onEndReach}
     />
   );
 };
