@@ -23,3 +23,5 @@
 ## [Part 9 - Typescript](Part%209/)
 
 ## [Part 10 - React Native](Part%2010/)
+
+## [Part 11 - CI/CD](Part%2011/)
