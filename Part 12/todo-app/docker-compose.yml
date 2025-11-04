@@ -1,31 +1,27 @@
 services:
   app:
-    image: front-dev
+    image: front
     build:
       context: ./todo-frontend
-      dockerfile: dev.Dockerfile
-    volumes:
-      - ./todo-frontend:/usr/src/app
-    container_name: front-dev
+      dockerfile: Dockerfile
+    container_name: front
 
   backend:
-    image: backend-dev
+    image: backend
     build:
       context: ./todo-backend
-      dockerfile: dev.Dockerfile
+      dockerfile: Dockerfile
     environment:
       - MONGO_URL=mongodb://the_username:the_password@mongo:27017/the_database
       - REDIS_URL=redis://redis:6379
     depends_on:
       - mongo
       - redis
-    volumes:
-      - ./todo-backend/:/usr/src/app
 
   nginx:
     image: nginx:1.20.1
     volumes:
-      - ./nginx.dev.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - 8080:80
     container_name: reverse-proxy
