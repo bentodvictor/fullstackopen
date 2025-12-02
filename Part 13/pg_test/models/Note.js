@@ -1,7 +1,8 @@
 import { DataTypes, Model } from "sequelize";
-import sequelize from "../utils/db.js";
+import { sequelize } from "../utils/db.js";
 
 class Note extends Model {}
+
 Note.init(
   {
     id: {
@@ -26,6 +27,6 @@ Note.init(
     timestamps: false,
     modelName: "note",
   }
-).sync();
+);
 
 export default Note;
