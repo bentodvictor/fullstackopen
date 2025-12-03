@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { Op } from "sequelize";
 import { tokenExtractor } from "../middleware/tokenExtractor.js";
 import { Blog, User } from "../models/index.js";
 
@@ -18,18 +19,31 @@ const blogFinder = async (req, res, next) => {
 
 router.get("/", async (req, res) => {
   try {
+    const where = {};
+
+    // Search
+    if (req.query.search) {
+      where[Op.or] = [
+        { title: { [Op.substring]: req.query.search } },
+        { author: { [Op.substring]: req.query.search } },
+      ];
+    }
+
     const blogs = await Blog.findAll({
       attributes: { exclude: ["userId"] },
       include: {
         model: User,
         attributes: ["name"],
       },
+      where,
+      order: [["likes", "DESC"]],
     });
 
     blogs.forEach((blog) => {
       const { author, title, likes } = blog.dataValues;
       console.log(`${author}: ${title}, ${likes} likes`);
     });
+
     return res.json(blogs);
   } catch (error) {
     return res.status(500).json({ error });
@@ -77,6 +91,24 @@ router.put("/:id", async (req, res) => {
     res.status(204).end();
   } catch (error) {
     res.status(500).send({ error });
+  }
+});
+
+router.get("/authors", async (req, res) => {
+  try {
+    const authors = await Blog.findAll({
+      attributes: [
+        "author",
+        [fn("COUNT", col("id")), "articles"],
+        [fn("COUNT", col("likes")), "likes"],
+      ],
+      group: ["author"],
+      oder: [[fn("SUM", col("likes")), "DESC"]],
+    });
+
+    res.status(200).json(authors);
+  } catch (error) {
+    res.status(500).json({ error });
   }
 });
 export default router;

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { Op } from "sequelize";
 import { tokenExtractor } from "../middleware/tokenExtractor.js";
 import { Note, User } from "../models/index.js";
 
@@ -10,12 +11,25 @@ const noteFinder = async (req, res, next) => {
 };
 
 router.get("/", async (req, res) => {
+  const where = {};
+
+  if (req.query.important) {
+    where.important = req.query.important === "true";
+  }
+
+  if (req.query.search) {
+    where.content = {
+      [Op.substring]: req.query.search,
+    };
+  }
+
   const notes = await Note.findAll({
     attributes: { exclude: ["userId"] },
     include: {
       model: User,
       attributes: ["name"],
     },
+    where,
   });
 
   return res.json(notes);
