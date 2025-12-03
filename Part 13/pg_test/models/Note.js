@@ -20,6 +20,11 @@ Note.init(
     date: {
       type: DataTypes.DATE,
     },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: { model: "users", key: "id" },
+    },
   },
   {
     sequelize,
@@ -29,4 +34,4 @@ Note.init(
   }
 );
 
-export default Note;
+export { Note };

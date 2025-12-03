@@ -1,5 +1,6 @@
 import { Router } from "express";
-import Note from "../models/Note.js";
+import { tokenExtractor } from "../middleware/tokenExtractor.js";
+import { Note, User } from "../models/index.js";
 
 const router = Router();
 
@@ -9,14 +10,25 @@ const noteFinder = async (req, res, next) => {
 };
 
 router.get("/", async (req, res) => {
-  const notes = await Note.findAll();
+  const notes = await Note.findAll({
+    attributes: { exclude: ["userId"] },
+    include: {
+      model: User,
+      attributes: ["name"],
+    },
+  });
 
   return res.json(notes);
 });
 
-router.post("/", async (req, res) => {
+router.post("/", tokenExtractor, async (req, res) => {
   try {
-    const note = await Note.create(req.body);
+    const user = await User.findByPk(req.decodedToken.id); // Find first user in the database
+    const note = await Note.create({
+      ...req.body,
+      userId: user.id,
+      date: new Date(),
+    });
     // const note = Note.build(req.body)
     // note.important = true
     return res.json(note);

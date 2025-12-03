@@ -1,12 +1,14 @@
-import ExtendableError from 'es6-error';
-
-export class ApplicationError extends ExtendableError {
-  constructor(message, status, properties) {
+export class ApplicationError extends Error {
+  constructor(
+    message = "Something went wrong",
+    status = 500,
+    properties = null
+  ) {
     super(message);
 
-    this.message = message || 'Something went wrong';
-    this.status = status || 500;
-    this.properties = properties || null;
+    this.message = this.constructor.name;
+    this.status = status;
+    this.properties = properties;
   }
 
   toJSON() {
@@ -18,8 +20,11 @@ export class ApplicationError extends ExtendableError {
   }
 }
 
-export class NotFoundError extends ApplicationError {
-  constructor(message, properties) {
-    super(message || 'The requested resource is not found', 404, properties);
+export class ValidationError extends ApplicationError {
+  constructor(
+    message = "The requested resource is not found",
+    properties = null
+  ) {
+    super(message, 404, properties);
   }
 }

@@ -1,16 +1,30 @@
 import { Router } from "express";
-import Blog from "../models/Blog";
+import { tokenExtractor } from "../middleware/tokenExtractor.js";
+import { Blog, User } from "../models/index.js";
 
 const router = Router();
 
 const blogFinder = async (req, res, next) => {
-  req.blog = await Blog.findByPk(req.params.id);
+  req.blog = await Blog.findOne({
+    where: {
+      id: req.params.id,
+    },
+    include: {
+      model: User,
+    },
+  });
   next();
 };
 
 router.get("/", async (req, res) => {
   try {
-    const blogs = await Blog.findAll();
+    const blogs = await Blog.findAll({
+      attributes: { exclude: ["userId"] },
+      include: {
+        model: User,
+        attributes: ["name"],
+      },
+    });
 
     blogs.forEach((blog) => {
       const { author, title, likes } = blog.dataValues;
@@ -22,9 +36,14 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", tokenExtractor, async (req, res) => {
   try {
-    const blog = await Blog.create(req.body);
+    const user = await User.findByPk(req.decodedToken.id); // Find first user in the database
+    const blog = await Blog.create({
+      ...req.body,
+      userId: user.id,
+      date: new Date(),
+    });
 
     return res.status(201).json({ blog });
   } catch (error) {
@@ -32,9 +51,13 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.delete("/:id", blogFinder, async (req, res) => {
+router.delete("/:id", blogFinder, tokenExtractor, async (req, res) => {
   try {
     if (!req.blog) res.status(401).end();
+
+    const user = await User.findByPk(req.decodedToken.id); // Find first user in the database
+
+    if (req.blog.userId != user.id) res.status(401).end();
 
     await blog.destroy();
 
