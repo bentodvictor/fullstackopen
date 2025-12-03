@@ -23,11 +23,32 @@ User.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    admin: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    disabled: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   },
   {
     sequelize,
     underscored: true,
+    timestamps: false,
     modelName: "user",
+    defaultScope: {
+      where: {
+        disabled: false,
+      },
+    },
+    scopes: {
+      admin: { where: { admin: true } },
+      disabled: { where: { disabled: true } },
+      name(value) {
+        return { where: { name: { [Op.iLike]: value } } };
+      },
+    },
   }
 );
 

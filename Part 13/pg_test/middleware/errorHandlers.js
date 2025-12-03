@@ -13,6 +13,14 @@ const errorHandler = () => async (ctx, next) => {
       return;
     }
 
+    if (e instanceof SequelizeValidationError) {
+      ctx.status = 400;
+      ctx.body = {
+        error: e.errors.map((err) => err.message).join("\n"),
+      };
+      return;
+    }
+
     const normalizedError =
       e instanceof ApplicationError
         ? e
